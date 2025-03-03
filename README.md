@@ -4,7 +4,7 @@
 
 Para resolver este problema, primero debemos generar los datos iniciales: la distribución de curules entre los 5 partidos y la lista de 50 entidades estatales con sus respectivos pesos políticos. Luego, usaremos un algoritmo genético (AG) para distribuir el poder entre los partidos de manera proporcional a su representación en el congreso.
 
-```
+```python
 import numpy as np
 
 # Definimos los 5 partidos
