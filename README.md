@@ -323,4 +323,45 @@ for generacion = 1:generaciones
     end
 end
 ```
-
+La salida que se tuvo con la palabra "hola" y "luna", respectivamente fue:
+```
+>> IAguia3
+Generación 1: ddcc (Aptitud: 0.25)
+Generación 2: ddkb (Aptitud: 0.50)
+Generación 3: rbla (Aptitud: 0.75)
+Generación 4: hola (Aptitud: 1.00)
+¡Palabra objetivo encontrada!
+>> IAguia3
+Generación 1: wlxa (Aptitud: 0.25)
+Generación 2: wlxa (Aptitud: 0.25)
+Generación 3: wlxa (Aptitud: 0.25)
+Generación 4: wlxa (Aptitud: 0.25)
+Generación 5: wlez (Aptitud: 0.50)
+Generación 6: wlna (Aptitud: 0.50)
+Generación 7: wlng (Aptitud: 0.50)
+Generación 8: wjna (Aptitud: 0.75)
+Generación 9: llza (Aptitud: 0.75)
+Generación 10: llna (Aptitud: 0.75)
+Generación 11: lqna (Aptitud: 0.75)
+Generación 12: wqwa (Aptitud: 0.75)
+Generación 13: wlna (Aptitud: 0.75)
+Generación 14: lmna (Aptitud: 0.75)
+Generación 15: llna (Aptitud: 0.75)
+Generación 16: wlxa (Aptitud: 0.75)
+Generación 17: llfa (Aptitud: 0.75)
+Generación 18: lnwa (Aptitud: 0.75)
+Generación 19: wlna (Aptitud: 0.75)
+Generación 20: lqna (Aptitud: 0.75)
+Generación 21: lnna (Aptitud: 0.75)
+Generación 22: lnna (Aptitud: 0.75)
+Generación 23: lmna (Aptitud: 0.75)
+Generación 24: lnna (Aptitud: 0.75)
+Generación 25: lmna (Aptitud: 0.75)
+Generación 26: lnna (Aptitud: 0.75)
+Generación 27: llna (Aptitud: 0.75)
+Generación 28: lmna (Aptitud: 0.75)
+Generación 29: llna (Aptitud: 0.75)
+Generación 30: lnna (Aptitud: 0.75)
+Generación 31: luna (Aptitud: 1.00)
+¡Palabra objetivo encontrada!
+```
