@@ -10,3 +10,18 @@
 | Planta B   | 4 | 1 | 4 | 5 |
 | Planta M    | 3 | 4 | 1 | 4 |
 | Planta B    | 6 | 5 | 4 | 1 |
+
+### Los costos del KW-H por generador se dan en la siguiente tabla:
+
+| Generador  | $ KW - H |
+|-----------|-----------|
+| Planta C    | 680  | 
+| Planta B   | 720 |
+| Planta M    | 660 | 
+| Planta B    | 750 | 
+
+### Encontrar usando AGs el mejor despacho de energía minimizando los costos de transporte y generación.
+
+### 4. Genere aleatoriamente una población de 50 palabras, que se escuche por el parlante del computador. Tomando como función de aptitud una palabra suya, usando AGs, con base en las palabras generadas aleatoriamente llegue a la palabra que usó como función de aptitud.
+
+### 5. Tome un problema de los anteriores, u otro cualquiera, y utilice la librería Python de AGs Pygad y para solucionarlo.
