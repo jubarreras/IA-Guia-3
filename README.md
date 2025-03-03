@@ -252,5 +252,75 @@ Energía enviada desde Planta B a Medellín: 0.0 GW
 Energía enviada desde Planta B a Barranquilla: 1.0 GW
 ```
 ### 4. Genere aleatoriamente una población de 50 palabras, que se escuche por el parlante del computador. Tomando como función de aptitud una palabra suya, usando AGs, con base en las palabras generadas aleatoriamente llegue a la palabra que usó como función de aptitud.
+Para este punto se utilizó la herramienta de MATLAB, ya que permite un manejo mas facil para solucionarlo, el codigo resultante es:
 
-### 5. Tome un problema de los anteriores, u otro cualquiera, y utilice la librería Python de AGs Pygad y para solucionarlo.
+```matlab
+% Palabra objetivo
+palabra_objetivo = 'luna';
+
+% Parámetros del algoritmo genético
+tamano_poblacion = 50;
+longitud_palabra = length(palabra_objetivo);
+probabilidad_mutacion = 0.1;
+generaciones = 100;
+
+% Caracteres permitidos (letras minúsculas)
+caracteres_permitidos = 'a':'z';
+
+% Función para generar una palabra aleatoria
+generar_palabra = @() caracteres_permitidos(randi(length(caracteres_permitidos), [1, longitud_palabra]));
+
+% Generar población inicial
+poblacion = cell(tamano_poblacion, 1);
+for i = 1:tamano_poblacion
+    poblacion{i} = generar_palabra();
+end
+
+% Función de aptitud
+funcion_aptitud = @(palabra) sum(palabra == palabra_objetivo) / longitud_palabra;
+
+for generacion = 1:generaciones
+    % Calcular aptitud de cada individuo
+    aptitudes = cellfun(funcion_aptitud, poblacion);
+    
+    % Seleccionar los mejores individuos (ruleta)
+    probabilidades = aptitudes / sum(aptitudes);
+    indices_seleccionados = randsample(1:tamano_poblacion, tamano_poblacion, true, probabilidades);
+    nueva_poblacion = poblacion(indices_seleccionados);
+    
+    % Cruzamiento (punto de cruce aleatorio)
+    for i = 1:2:tamano_poblacion
+        punto_cruce = randi([1, longitud_palabra-1]);
+        padre1 = nueva_poblacion{i};
+        padre2 = nueva_poblacion{i+1};
+        nueva_poblacion{i} = [padre1(1:punto_cruce), padre2(punto_cruce+1:end)];
+        nueva_poblacion{i+1} = [padre2(1:punto_cruce), padre1(punto_cruce+1:end)];
+    end
+    
+    % Mutación
+    for i = 1:tamano_poblacion
+        if rand < probabilidad_mutacion
+            posicion_mutacion = randi(longitud_palabra);
+            nueva_poblacion{i}(posicion_mutacion) = caracteres_permitidos(randi(length(caracteres_permitidos)));
+        end
+    end
+    
+    % Actualizar población
+    poblacion = nueva_poblacion;
+    
+    % Mostrar la mejor palabra de la generación
+    [mejor_aptitud, mejor_indice] = max(aptitudes);
+    mejor_palabra = poblacion{mejor_indice};
+    fprintf('Generación %d: %s (Aptitud: %.2f)\n', generacion, mejor_palabra, mejor_aptitud);
+    
+    % Reproducir la mejor palabra por el parlante
+    if mejor_aptitud == 1
+        disp('¡Palabra objetivo encontrada!');
+        sound(sin(2*pi*(1:4000)/4000)); % Beep de éxito
+        break;
+    else
+        sound(sin(2*pi*(1:2000)/2000)); % Beep de avance
+    end
+end
+```
+
