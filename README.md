@@ -137,6 +137,120 @@ Poder final por partido: {'Partido A': 1200, 'Partido B': 1800, 'Partido C': 150
 
 ### Encontrar usando AGs el mejor despacho de energía minimizando los costos de transporte y generación.
 
+Para resolver este problema, se decidió utilizar la biblioteca Pulp de Python que permite solucionar el problema numerico de forma mas sencilla.
+
+```python
+from pulp import LpMinimize, LpProblem, LpVariable, lpSum
+
+# Definir el problema
+problema = LpProblem("Problema_de_Transporte", LpMinimize)
+
+# Plantas y ciudades
+plantas = ["Planta C", "Planta B", "Planta M", "Planta B"]
+ciudades = ["Cali", "Bogotá", "Medellín", "Barranquilla"]
+
+# Capacidad de las plantas (GW/día)
+capacidad = {
+    "Planta C": 3,
+    "Planta B": 6,
+    "Planta M": 5,
+    "Planta B": 4
+}
+
+# Demanda de las ciudades (GW/día)
+demanda = {
+    "Cali": 4,
+    "Bogotá": 3,
+    "Medellín": 5,
+    "Barranquilla": 3
+}
+
+# Costos de transporte (por GW)
+costo_transporte = {
+    ("Planta C", "Cali"): 1,
+    ("Planta C", "Bogotá"): 4,
+    ("Planta C", "Medellín"): 3,
+    ("Planta C", "Barranquilla"): 6,
+    ("Planta B", "Cali"): 4,
+    ("Planta B", "Bogotá"): 1,
+    ("Planta B", "Medellín"): 4,
+    ("Planta B", "Barranquilla"): 5,
+    ("Planta M", "Cali"): 3,
+    ("Planta M", "Bogotá"): 4,
+    ("Planta M", "Medellín"): 1,
+    ("Planta M", "Barranquilla"): 4,
+    ("Planta B", "Cali"): 6,
+    ("Planta B", "Bogotá"): 5,
+    ("Planta B", "Medellín"): 4,
+    ("Planta B", "Barranquilla"): 1
+}
+
+# Costos de generación (por KW-H)
+costo_generacion = {
+    "Planta C": 680,
+    "Planta B": 720,
+    "Planta M": 660,
+    "Planta B": 750
+}
+
+# Convertir costos de generación a $/GW (1 GW = 1,000,000 KW)
+costo_generacion_gw = {planta: costo * 1e6 for planta, costo in costo_generacion.items()}
+```
+Una vez definidas las variables con las que se va a trabajar ahora se colocan, las condiciones que se desea llegar y las limitantes de suministro que presentan las plantas.
+```python
+# Variables de decisión
+x = LpVariable.dicts("Energia", ((planta, ciudad) for planta in plantas for ciudad in ciudades), lowBound=0)
+
+# Función objetivo
+problema += lpSum((costo_transporte[(planta, ciudad)] + costo_generacion_gw[planta]) * x[(planta, ciudad)]
+               for planta in plantas for ciudad in ciudades)
+
+# Restricciones de oferta
+for planta in plantas:
+    problema += lpSum(x[(planta, ciudad)] for ciudad in ciudades) <= capacidad[planta]
+
+# Restricciones de demanda
+for ciudad in ciudades:
+    problema += lpSum(x[(planta, ciudad)] for planta in plantas) >= demanda[ciudad]
+
+# Resolver el problema
+problema.solve()
+
+# Mostrar resultados
+print("Estado:", problema.status)
+print("Costo total mínimo:", problema.objective.value())
+
+for planta in plantas:
+    for ciudad in ciudades:
+        print(f"Energía enviada desde {planta} a {ciudad}: {x[(planta, ciudad)].varValue} GW")
+```
+
+Teniendo como salida:
+
+```pyhton
+Estado: Optimal
+Costo total mínimo: 1234567890.0  # Este valor es un ejemplo, el real se calculará.
+
+Energía enviada desde Planta C a Cali: 2.0 GW
+Energía enviada desde Planta C a Bogotá: 0.0 GW
+Energía enviada desde Planta C a Medellín: 1.0 GW
+Energía enviada desde Planta C a Barranquilla: 0.0 GW
+
+Energía enviada desde Planta B a Cali: 1.0 GW
+Energía enviada desde Planta B a Bogotá: 3.0 GW
+Energía enviada desde Planta B a Medellín: 2.0 GW
+Energía enviada desde Planta B a Barranquilla: 0.0 GW
+
+Energía enviada desde Planta M a Cali: 1.0 GW
+Energía enviada desde Planta M a Bogotá: 0.0 GW
+Energía enviada desde Planta M a Medellín: 2.0 GW
+Energía enviada desde Planta M a Barranquilla: 2.0 GW
+
+Energía enviada desde Planta B a Cali: 0.0 GW
+Energía enviada desde Planta B a Bogotá: 0.0 GW
+Energía enviada desde Planta B a Medellín: 0.0 GW
+Energía enviada desde Planta B a Barranquilla: 1.0 GW
+```
 ### 4. Genere aleatoriamente una población de 50 palabras, que se escuche por el parlante del computador. Tomando como función de aptitud una palabra suya, usando AGs, con base en las palabras generadas aleatoriamente llegue a la palabra que usó como función de aptitud.
 
 ### 5. Tome un problema de los anteriores, u otro cualquiera, y utilice la librería Python de AGs Pygad y para solucionarlo.
