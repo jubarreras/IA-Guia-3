@@ -4,7 +4,9 @@
 
 ### 2. Una empresa proveedora de energía eléctrica dispone de cuatro plantas de generación para satisfacer la demanda diaria de energía eléctrica en Cali, Bogotá, Medellín y Barranquilla. Cada una puede generar 3, 6, 5 y 4 GW al día respectivamente. Las necesidades de Cali, Bogotá, Medellín y Barranquilla son de 4, 3, 5 y 3 GW al día respectivamente. Los costos por el transporte de energía por cada GW entre plantas y ciudades se dan en la siguiente tabla:
 
-| Columna 1 | Columna 2 | Columna 3 |
-|-----------|-----------|-----------|
-| Dato 1    | Dato 2    | Dato 3    |
-| Dato 4    | Dato 5    | Dato 6    |
+| Planta | Cali | Bogotá | Medellín | Barranqui. |
+|-----------|-----------|-----------|-------| ------ |
+| Planta C    | 1  | 4   | 3 | 6 |
+| Planta B   | 4 | 1 | 4 | 5 |
+| Planta M    | 3 | 4 | 1 | 4 |
+| Planta B    | 6 | 5 | 4 | 1 |
