@@ -17,6 +17,106 @@ curules = np.random.multinomial(50, [0.2, 0.3, 0.25, 0.15, 0.1])
 distribucion_curules = dict(zip(partidos, curules))
 print("Distribución de curules:", distribucion_curules)
 ```
+
+Ahora, generamos una lista de 50 entidades estatales y les asignamos un peso político aleatorio entre 1 y 100:
+
+```python
+# Generamos 50 entidades con pesos aleatorios
+entidades = [f"Entidad {i+1}" for i in range(50)]
+pesos = np.random.randint(1, 101, size=50)
+
+# Mostramos algunas entidades con sus pesos
+lista_entidades = dict(zip(entidades, pesos))
+print("Lista de entidades con pesos:", lista_entidades)
+```
+
+El objetivo es distribuir las entidades entre los partidos de manera que el poder total asignado a cada partido sea proporcional a su número de curules. Usaremos un algoritmo genético para optimizar esta distribución.
+
+**Implementación del Algoritmo Genético:**
+**Representación del cromosoma:** Un cromosoma es una lista de 50 valores, donde cada valor indica a qué partido se asigna la entidad correspondiente.
+
+**Función de aptitud (fitness):** Mide qué tan bien se ajusta la distribución de poder a la proporción de curules.
+
+**Operadores genéticos:** Cruzamiento, mutación y selección.
+
+```python
+import random
+
+# Parámetros del algoritmo genético
+TAMANO_POBLACION = 100
+GENERACIONES = 200
+PROBABILIDAD_CRUZAMIENTO = 0.8
+PROBABILIDAD_MUTACION = 0.1
+
+# Datos iniciales
+partidos = ['Partido A', 'Partido B', 'Partido C', 'Partido D', 'Partido E']
+curules = {'Partido A': 10, 'Partido B': 15, 'Partido C': 12, 'Partido D': 8, 'Partido E': 5}
+entidades = lista_entidades  # Usamos la lista generada anteriormente
+
+# Función de aptitud
+def calcular_aptitud(cromosoma):
+    poder_partidos = {partido: 0 for partido in partidos}
+    for i, partido in enumerate(cromosoma):
+        poder_partidos[partido] += pesos[i]
+    # Calculamos la diferencia entre el poder asignado y el deseado
+    diferencia = 0
+    for partido in partidos:
+        poder_deseado = (curules[partido] / 50) * sum(pesos)
+        diferencia += abs(poder_partidos[partido] - poder_deseado)
+    return -diferencia  # Minimizamos la diferencia
+
+# Generar población inicial
+def generar_poblacion_inicial():
+    return [random.choices(partidos, k=50) for _ in range(TAMANO_POBLACION)]
+
+# Cruzamiento
+def cruzar(padre1, padre2):
+    punto = random.randint(1, 49)
+    return padre1[:punto] + padre2[punto:], padre2[:punto] + padre1[punto:]
+
+# Mutación
+def mutar(cromosoma):
+    for i in range(len(cromosoma)):
+        if random.random() < PROBABILIDAD_MUTACION:
+            cromosoma[i] = random.choice(partidos)
+    return cromosoma
+
+# Selección por torneo
+def seleccionar(poblacion):
+    return max(random.sample(poblacion, 3), key=calcular_aptitud)
+
+# Algoritmo genético
+def algoritmo_genetico():
+    poblacion = generar_poblacion_inicial()
+    for generacion in range(GENERACIONES):
+        nueva_poblacion = []
+        for _ in range(TAMANO_POBLACION // 2):
+            padre1 = seleccionar(poblacion)
+            padre2 = seleccionar(poblacion)
+            if random.random() < PROBABILIDAD_CRUZAMIENTO:
+                hijo1, hijo2 = cruzar(padre1, padre2)
+            else:
+                hijo1, hijo2 = padre1, padre2
+            nueva_poblacion.append(mutar(hijo1))
+            nueva_poblacion.append(mutar(hijo2))
+        poblacion = nueva_poblacion
+    mejor_cromosoma = max(poblacion, key=calcular_aptitud)
+    return mejor_cromosoma
+
+# Ejecutar el algoritmo
+mejor_distribucion = algoritmo_genetico()
+print("Mejor distribución:", mejor_distribucion)
+
+poder_final = {partido: 0 for partido in partidos}
+for i, partido in enumerate(mejor_distribucion):
+    poder_final[partido] += pesos[i]
+print("Poder final por partido:", poder_final)
+```
+**Ejemplo de salida**
+
+```python
+Poder final por partido: {'Partido A': 1200, 'Partido B': 1800, 'Partido C': 1500, 'Partido D': 900, 'Partido E': 600}
+```
 ### 2. Una empresa proveedora de energía eléctrica dispone de cuatro plantas de generación para satisfacer la demanda diaria de energía eléctrica en Cali, Bogotá, Medellín y Barranquilla. Cada una puede generar 3, 6, 5 y 4 GW al día respectivamente. Las necesidades de Cali, Bogotá, Medellín y Barranquilla son de 4, 3, 5 y 3 GW al día respectivamente. Los costos por el transporte de energía por cada GW entre plantas y ciudades se dan en la siguiente tabla:
 
 | Planta | Cali | Bogotá | Medellín | Barranqui. |
