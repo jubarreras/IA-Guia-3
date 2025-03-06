@@ -256,6 +256,7 @@ Mejor solución encontrada:
 Costo total: $11464.54
 ```
 ### 4. Genere aleatoriamente una población de 50 palabras, que se escuche por el parlante del computador. Tomando como función de aptitud una palabra suya, usando AGs, con base en las palabras generadas aleatoriamente llegue a la palabra que usó como función de aptitud.
+Este código implementa un **Algoritmo Genético (AG)** para encontrar una palabra objetivo (en este caso, 'luna') a partir de una población inicial de palabras aleatorias. La población se genera usando caracteres permitidos (letras minúsculas de 'a' a 'z'), y cada palabra se evalúa mediante una función de aptitud que mide cuántos caracteres coinciden con la palabra objetivo. En cada generación, se seleccionan los individuos más aptos (usando selección por ruleta), se aplica un cruce en un punto aleatorio para combinar palabras y se introduce una mutación aleatoria en algunas posiciones para mantener la diversidad. El proceso se repite durante un número máximo de generaciones, mostrando la mejor palabra encontrada en cada iteración. Si se encuentra la palabra objetivo exacta, se reproduce un sonido de éxito y el algoritmo termina; de lo contrario, se emite un sonido de avance y continúa la búsqueda.
 Para este punto se utilizó la herramienta de MATLAB, ya que permite un manejo mas facil para solucionarlo, el codigo resultante es:
 
 ```matlab
