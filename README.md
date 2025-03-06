@@ -136,120 +136,115 @@ Poder final por partido: {'Partido A': 1200, 'Partido B': 1800, 'Partido C': 150
 | Planta B    | 750 | 
 
 ### Encontrar usando AGs el mejor despacho de energía minimizando los costos de transporte y generación.
-
-Para resolver este problema, se decidió utilizar la biblioteca Pulp de Python que permite solucionar el problema numerico de forma mas sencilla.
-
+Se importa la librería numpy para trabajar con matrices y operaciones numéricas eficientes, y se incializan los parametros con los que se quiere trabajar.
 ```python
-from pulp import LpMinimize, LpProblem, LpVariable, lpSum
+import numpy as np
 
-# Definir el problema
-problema = LpProblem("Problema_de_Transporte", LpMinimize)
+# Parámetros del problema
+capacidad_plantas = [3, 6, 5, 4]
+demanda_ciudades = [4, 3, 5, 3]
+costos_transporte = np.array([
+    [1, 4, 3, 6],
+    [4, 1, 4, 5],
+    [3, 4, 1, 4],
+    [6, 5, 4, 1]
+])
+costos_generacion = [680, 720, 660, 750]  # $/GW
 
-# Plantas y ciudades
-plantas = ["Planta C", "Planta B", "Planta M", "Planta B"]
-ciudades = ["Cali", "Bogotá", "Medellín", "Barranquilla"]
-
-# Capacidad de las plantas (GW/día)
-capacidad = {
-    "Planta C": 3,
-    "Planta B": 6,
-    "Planta M": 5,
-    "Planta B": 4
-}
-
-# Demanda de las ciudades (GW/día)
-demanda = {
-    "Cali": 4,
-    "Bogotá": 3,
-    "Medellín": 5,
-    "Barranquilla": 3
-}
-
-# Costos de transporte (por GW)
-costo_transporte = {
-    ("Planta C", "Cali"): 1,
-    ("Planta C", "Bogotá"): 4,
-    ("Planta C", "Medellín"): 3,
-    ("Planta C", "Barranquilla"): 6,
-    ("Planta B", "Cali"): 4,
-    ("Planta B", "Bogotá"): 1,
-    ("Planta B", "Medellín"): 4,
-    ("Planta B", "Barranquilla"): 5,
-    ("Planta M", "Cali"): 3,
-    ("Planta M", "Bogotá"): 4,
-    ("Planta M", "Medellín"): 1,
-    ("Planta M", "Barranquilla"): 4,
-    ("Planta B", "Cali"): 6,
-    ("Planta B", "Bogotá"): 5,
-    ("Planta B", "Medellín"): 4,
-    ("Planta B", "Barranquilla"): 1
-}
-
-# Costos de generación (por KW-H)
-costo_generacion = {
-    "Planta C": 680,
-    "Planta B": 720,
-    "Planta M": 660,
-    "Planta B": 750
-}
-
-# Convertir costos de generación a $/GW (1 GW = 1,000,000 KW)
-costo_generacion_gw = {planta: costo * 1e6 for planta, costo in costo_generacion.items()}
-```
-Una vez definidas las variables con las que se va a trabajar ahora se colocan, las condiciones que se desea llegar y las limitantes de suministro que presentan las plantas.
+# Configuración AG
+POBLACION = 100
+GENERACIONES = 200
+PROB_CRUCE = 0.8
+PROB_MUTACION = 0.05
+```Las funciones del código implementan un Algoritmo Genético (AG) para resolver un problema de optimización. La función crear_individuo genera soluciones candidatas (matrices 4x4) que cumplen con las restricciones de capacidad y demanda. La función calcular_aptitud evalúa la calidad de cada individuo, penalizando soluciones que violen las restricciones y calculando el costo total de transporte y generación. La función seleccion elige individuos para la reproducción basándose en su aptitud, mientras que cruce combina dos individuos para crear descendencia intercambiando filas de la matriz. La función mutar introduce cambios aleatorios en una celda de la matriz para mantener la diversidad genética. El algoritmo principal inicializa una población, itera a través de generaciones, evalúa la aptitud de los individuos, selecciona los mejores, y aplica cruce y mutación para crear una nueva población. Al final, imprime la mejor solución encontrada y su costo total, optimizando la distribución de energía desde plantas a ciudades.
 ```python
-# Variables de decisión
-x = LpVariable.dicts("Energia", ((planta, ciudad) for planta in plantas for ciudad in ciudades), lowBound=0)
+def crear_individuo():
+    # Generar matriz 4x4 que cumpla restricciones de capacidad
+    individuo = np.zeros((4,4))
+    for i in range(4):
+        total = 0
+        for j in range(4):
+            max_posible = min(capacidad_plantas[i] - total, demanda_ciudades[j])
+            if max_posible <= 0:
+                individuo[i,j] = 0
+                continue
+            individuo[i,j] = np.random.uniform(0, max_posible)
+            total += individuo[i,j]
+    return individuo
 
-# Función objetivo
-problema += lpSum((costo_transporte[(planta, ciudad)] + costo_generacion_gw[planta]) * x[(planta, ciudad)]
-               for planta in plantas for ciudad in ciudades)
+def calcular_aptitud(individuo):
+    # Verificar restricciones
+    penalizacion = 0
+    # Verificar capacidad plantas
+    for i in range(4):
+        suma = individuo[i,:].sum()
+        if suma > capacidad_plantas[i]:
+            penalizacion += 1e6 * (suma - capacidad_plantas[i])
 
-# Restricciones de oferta
-for planta in plantas:
-    problema += lpSum(x[(planta, ciudad)] for ciudad in ciudades) <= capacidad[planta]
+    # Verificar demanda ciudades
+    for j in range(4):
+        suma = individuo[:,j].sum()
+        if suma < demanda_ciudades[j]:
+            penalizacion += 1e6 * (demanda_ciudades[j] - suma)
 
-# Restricciones de demanda
-for ciudad in ciudades:
-    problema += lpSum(x[(planta, ciudad)] for planta in plantas) >= demanda[ciudad]
+    # Calcular costos
+    costo_transporte = (individuo * costos_transporte).sum()
+    costo_generacion = sum([individuo[i,:].sum() * costos_generacion[i] for i in range(4)])
 
-# Resolver el problema
-problema.solve()
+    return -(costo_transporte + costo_generacion + penalizacion)  # Minimizar
 
-# Mostrar resultados
-print("Estado:", problema.status)
-print("Costo total mínimo:", problema.objective.value())
+def seleccion(poblacion, aptitudes):
+    # Selección por ruleta
+    probabilidades = aptitudes - aptitudes.min()
+    if probabilidades.sum() == 0:
+        return poblacion[np.random.choice(len(poblacion))]
+    probabilidades /= probabilidades.sum()
+    return poblacion[np.random.choice(len(poblacion), p=probabilidades)]
 
-for planta in plantas:
-    for ciudad in ciudades:
-        print(f"Energía enviada desde {planta} a {ciudad}: {x[(planta, ciudad)].varValue} GW")
-```
+def cruce(padre1, padre2):
+    # Cruce por intercambio de filas
+    if np.random.random() > PROB_CRUCE:
+        return padre1.copy(), padre2.copy()
 
-Teniendo como salida:
+    punto = np.random.randint(1,3)
+    hijo1 = np.vstack((padre1[:punto], padre2[punto:]))
+    hijo2 = np.vstack((padre2[:punto], padre1[punto:]))
+    return hijo1, hijo2
 
-```pyhton
-Estado: Optimal
-Costo total mínimo: 1234567890.0  # Este valor es un ejemplo, el real se calculará.
+def mutar(individuo):
+    # Mutación aleatoria en una celda
+    if np.random.random() < PROB_MUTACION:
+        i, j = np.random.randint(4), np.random.randint(4)
+        max_val = min(capacidad_plantas[i], demanda_ciudades[j])
+        individuo[i,j] = np.random.uniform(0, max_val)
+    return individuo
 
-Energía enviada desde Planta C a Cali: 2.0 GW
-Energía enviada desde Planta C a Bogotá: 0.0 GW
-Energía enviada desde Planta C a Medellín: 1.0 GW
-Energía enviada desde Planta C a Barranquilla: 0.0 GW
+# Algoritmo principal
+poblacion = [crear_individuo() for _ in range(POBLACION)]
+mejor_aptitud = -float('inf')
 
-Energía enviada desde Planta B a Cali: 1.0 GW
-Energía enviada desde Planta B a Bogotá: 3.0 GW
-Energía enviada desde Planta B a Medellín: 2.0 GW
-Energía enviada desde Planta B a Barranquilla: 0.0 GW
+for gen in range(GENERACIONES):
+    aptitudes = np.array([calcular_aptitud(ind) for ind in poblacion])
 
-Energía enviada desde Planta M a Cali: 1.0 GW
-Energía enviada desde Planta M a Bogotá: 0.0 GW
-Energía enviada desde Planta M a Medellín: 2.0 GW
-Energía enviada desde Planta M a Barranquilla: 2.0 GW
+    # Registro del mejor
+    mejor_idx = aptitudes.argmax()
+    if aptitudes[mejor_idx] > mejor_aptitud:
+        mejor_aptitud = aptitudes[mejor_idx]
+        mejor_individuo = poblacion[mejor_idx].copy()
 
-Energía enviada desde Planta B a Cali: 0.0 GW
-Energía enviada desde Planta B a Bogotá: 0.0 GW
-Energía enviada desde Planta B a Medellín: 0.0 GW
-Energía enviada desde Planta B a Barranquilla: 1.0 GW
+    # Nueva generación
+    nueva_poblacion = []
+    for _ in range(POBLACION//2):
+        padre1 = seleccion(poblacion, aptitudes)
+        padre2 = seleccion(poblacion, aptitudes)
+        hijo1, hijo2 = cruce(padre1, padre2)
+        nueva_poblacion.extend([mutar(hijo1), mutar(hijo2)])
+
+    poblacion = nueva_poblacion
+
+print("Mejor solución encontrada:")
+print(mejor_individuo)
+print(f"Costo total: ${-mejor_aptitud:.2f}")
 ```
 ### 4. Genere aleatoriamente una población de 50 palabras, que se escuche por el parlante del computador. Tomando como función de aptitud una palabra suya, usando AGs, con base en las palabras generadas aleatoriamente llegue a la palabra que usó como función de aptitud.
 Para este punto se utilizó la herramienta de MATLAB, ya que permite un manejo mas facil para solucionarlo, el codigo resultante es:
