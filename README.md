@@ -246,6 +246,15 @@ print("Mejor solución encontrada:")
 print(mejor_individuo)
 print(f"Costo total: ${-mejor_aptitud:.2f}")
 ```
+El resultado para este calculo especifico será:
+```python
+Mejor solución encontrada:
+[[1.08422944 0.1069619  0.89993074 0.59512829]
+ [0.03929752 0.63827116 2.33141806 1.63678221]
+ [0.23807249 1.59578442 2.52197908 0.6391114 ]
+ [2.69092499 0.70160932 0.35614804 0.16700215]]
+Costo total: $11464.54
+```
 ### 4. Genere aleatoriamente una población de 50 palabras, que se escuche por el parlante del computador. Tomando como función de aptitud una palabra suya, usando AGs, con base en las palabras generadas aleatoriamente llegue a la palabra que usó como función de aptitud.
 Para este punto se utilizó la herramienta de MATLAB, ya que permite un manejo mas facil para solucionarlo, el codigo resultante es:
 
